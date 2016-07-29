@@ -1,0 +1,30 @@
+<!doctype html>
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Machine Learning App</title>
+  <!-- <link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}"> -->
+  <link rel=stylesheet type=text/css href="{{ url_for('static', filename='css/bootstrap-theme.min.css') }}">
+  <link rel=stylesheet type=text/css href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+  <link rel=stylesheet type=text/css href="{{ url_for('static', filename='css/custom.css') }}">
+
+  <!-- <script src="{{ url_for('static', filename='jquery.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='jquery-ui.min.js') }}"></script> -->
+</head>
+
+<body class="home">
+  <!-- <link rel=stylesheet type=text/css href="allison-style.css"> -->
+  <div class=container>
+    <section class="jumbotron" id="content">
+      {% for message in get_flashed_messages() %}
+      <div class=flash>{{ message }}</div>
+      {% endfor %}
+      {% block body %}
+      <!-- content pulled from other templates -->
+      {% endblock %}
+    </section>
+    <h1>mLearninApp</h1>
+  </div>
+</body>

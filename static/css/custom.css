@@ -1,0 +1,10 @@
+body {
+    padding-top: 65px;
+}
+.carousel-inner > .item > img {
+    margin: 0 auto;
+}
+.navbar {
+  padding-left: 5%;
+  padding-right: 5%
+}
