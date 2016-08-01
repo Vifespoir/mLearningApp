@@ -8,7 +8,6 @@ from werkzeug.utils import secure_filename
 import logging
 from mLearning.dataPlot import DataPlot
 
-
 from bokeh.resources import INLINE
 from bokeh.util.string import encode_utf8
 from bokeh.embed import components
@@ -79,7 +78,7 @@ from flask import send_from_directory
 @app.route('/uploads/<filename>')
 def plot(filename):
     plots = DataPlot('us-veggies', 'uploads/' + filename)
-    fig = plots.boxplot_all_quartiles(normalized=True)
+    fig = plots.parallel_coordinates_graph(normalized=True)
     logging.info(fig)
     # Configure resources to include BokehJS inline in the document.
     # For more details see:
