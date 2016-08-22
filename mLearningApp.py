@@ -3,14 +3,14 @@
 # all the imports
 import os
 import sqlite3
-from flask import Flask, request, session, g, redirect, url_for, abort, render_template, flash
+from flask import Flask, request, session, g, redirect, url_for, abort, render_template, flash, send_from_directory
 from werkzeug.utils import secure_filename
+from werkzeug.local import LocalProxy
 import logging
 from mLearning.dataPlot import DataPlot
-
 from bokeh.resources import INLINE
-from bokeh.util.string import encode_utf8
 from bokeh.embed import components
+import inspect
 
 
 logging.basicConfig(
@@ -33,9 +33,16 @@ app.config.from_envvar('FLASKR_SETTINGS', silent=True)
 # Constants
 ALLOWED_EXTENSIONS = ['csv']
 
+
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
+
+
+@app.route('/')
+def root():
+    return redirect(url_for('upload_file'))
+
 
 @app.route('/upload', methods=['GET', 'POST'])
 def upload_file():
@@ -54,48 +61,61 @@ def upload_file():
             filename = secure_filename(file.filename)
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
             flash('%s has been successfully uploaded' % filename)
-            return redirect(url_for('plot', filename=filename))
+            return redirect(url_for('visualize', filename=filename))
 
     return render_template('upload.html')
 
-from flask import send_from_directory
 
 # @app.route('/uploads/<filename>')
 # def uploaded_file(filename):
 #     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
-# @app.route('/uploads/<filename>')
-# def uploaded_file(filename):
-#     return render_template('uploaded.html', filename=filename)
-#
-# def getitem(obj, item, default):
-#     if item not in obj:
-#         return default
-#     else:
-#         return obj[item]
+
+def getitem(obj, item, default):
+    if item not in obj:
+        return default
+    else:
+        return obj[item]
 
 
-@app.route('/uploads/<filename>')
-def plot(filename):
-    plots = DataPlot('us-veggies', 'uploads/' + filename)
-    fig = plots.parallel_coordinates_graph(normalized=True)
-    logging.info(fig)
+@app.route('/uploads/<filename>', methods=['GET', 'POST'])
+def visualize(filename):
+    methodNames = ['normalize_data', 'cross_plotting_pair_of_attributes', 'transpose_index', 'plot_target_correlation', '__init__', 'boxplot_all_quartiles', 'parallel_coordinates_graph', 'heatmap_pearson_correlation']
+    logging.debug(methodNames)
+    logging.debug(request.method)
+    if request.method == 'POST':
+        methodName = request.form['option']
+        logging.debug(methodName)
+        if methodName != '':
+            return redirect(url_for('plot', filename=filename, plotName=methodName))
+
+    return render_template(
+        'plot_options.html',
+        options=methodNames)
+
+
+@app.route('/uploads/<filename>/<plotName>')
+def plot(filename, plotName):
+    plot = DataPlot('us-veggies', 'uploads/' + filename)
+    methods = dict(inspect.getmembers(plot, predicate=inspect.ismethod))
+    method = methods[plotName]
+    plot = method()
     # Configure resources to include BokehJS inline in the document.
     # For more details see:
     #   http://bokeh.pydata.org/en/latest/docs/reference/resources_embedding.html#bokeh-embed
     js_resources = INLINE.render_js()
     css_resources = INLINE.render_css()
-
     # For more details see:
     #   http://bokeh.pydata.org/en/latest/docs/user_guide/embedding.html#components
-    script, div = components(fig, INLINE)
-
+    script, div = components(plot.document(), INLINE)
     return render_template(
-            'embed.html',
-            plot_script=script,
-            plot_div=div,
-            js_resources=js_resources,
-            css_resources=css_resources)
+        'embed.html',
+        plot_script=script,
+        plot_div=div,
+        js_resources=js_resources,
+        css_resources=css_resources,
+        name=plot.plotName)
+
 
 def main():
     app.debug = True
