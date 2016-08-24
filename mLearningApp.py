@@ -1,4 +1,4 @@
-"""Flask tutorial."""
+"""mLearningApp."""
 
 # all the imports
 import os
@@ -61,7 +61,7 @@ def upload_file():
             filename = secure_filename(file.filename)
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
             flash('%s has been successfully uploaded' % filename)
-            return redirect(url_for('visualize', filename=filename))
+            return redirect(url_for('visualize_options', filename=filename))
 
     return render_template('upload.html')
 
@@ -79,26 +79,45 @@ def getitem(obj, item, default):
 
 
 @app.route('/uploads/<filename>', methods=['GET', 'POST'])
-def visualize(filename):
-    methodNames = ['normalize_data', 'cross_plotting_pair_of_attributes', 'transpose_index', 'plot_target_correlation', '__init__', 'boxplot_all_quartiles', 'parallel_coordinates_graph', 'heatmap_pearson_correlation']
-    logging.debug(methodNames)
-    logging.debug(request.method)
+def visualize_options(filename):
+    logging.debug('Visualizing options...')
+
+    simpleMethodNames = ['boxplot_all_quartiles', 'parallel_coordinates_graph', 'heatmap_pearson_correlation']
+    complexMethodNames = ['cross_plotting_pair_of_attributes', 'transpose_index', 'plot_target_correlation']
+
+    # logging.debug('Simple method names: %s' % simpleMethodNames)
+    # logging.debug('Complex method names: %s' % complexMethodNames)
+    templateDict = dict(simpleOptions=simpleMethodNames,
+                        complexOptions=complexMethodNames)
+
     if request.method == 'POST':
+        logging.debug('POST form: %s' % [item for item in request.form.items()])
+
+        normalized = request.form['normalized']
+        logging.debug('Normalization status: %s' % normalized)
+        if normalized == 'True':
+            dataStatus = True
+        else:
+            dataStatus = False
+
         methodName = request.form['option']
-        logging.debug(methodName)
-        if methodName != '':
-            return redirect(url_for('plot', filename=filename, plotName=methodName))
+        logging.debug('DataPlot method to be called: %s' % methodName)
+        if methodName in simpleMethodNames:
+            return redirect(url_for('plot', filename=filename, methodName=methodName, dataStatus=dataStatus))
+        elif methodName in complexMethodNames:
+            render_template('plot_options.html', **templateDict)
 
-    return render_template(
-        'plot_options.html',
-        options=methodNames)
+    logging.debug('Options visualized...')
+    return render_template('plot_options.html', **templateDict)
 
 
-@app.route('/uploads/<filename>/<plotName>')
-def plot(filename, plotName):
-    plot = DataPlot('us-veggies', 'uploads/' + filename)
-    methods = dict(inspect.getmembers(plot, predicate=inspect.ismethod))
-    method = methods[plotName]
+@app.route('/uploads/<filename>/<dataStatus>/<methodName>')
+def plot(filename, dataStatus, methodName):
+    logging.debug('Normalization Status: %s' % dataStatus)
+    dataPlot = DataPlot(tableName='us-veggies', dataFile='uploads/' + filename, normalized=dataStatus)
+    logging.debug('dataPlot Status: %s' % dataPlot.normalized)
+    methods = dict(inspect.getmembers(dataPlot, predicate=inspect.ismethod))
+    method = methods[methodName]
     plot = method()
     # Configure resources to include BokehJS inline in the document.
     # For more details see:
