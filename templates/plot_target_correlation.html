@@ -1,0 +1,37 @@
+{% extends "layout.html" %}
+{% block body %}
+<h2>Plot Options</h2>
+<form action="" method=post enctype=multipart/form-data>
+<table style="width:100%">
+  <tr>
+    <label for=firstCol>
+      <td>
+        <h4>Y Axis</h4>
+      </td>
+      {% for col in columns %}
+      {% if loop.first %}
+      <td>
+        <input type=radio id=firstCol name=firstCol value={{col}} checked> {{col}}
+      </td>
+      {% else %}
+      <td>
+        <input type=radio id=firstCol name=firstCol value={{col}}> {{col}}
+      </td>
+      {% endif %}
+      {% endfor %}
+    </label>
+  </tr>
+</table>
+<input type=submit name=columns value=Submit>
+</form>
+{% if name %}
+<section id=plot>
+<title>{{ name }}</title>
+{{ js_resources|indent(4)|safe }}
+{{ css_resources|indent(4)|safe }}
+{{ plot_script|indent(4)|safe }}
+<!-- A simple form for changing the graph -->
+{{ plot_div|indent(4)|safe }}
+</section>
+{% endif %}
+{% endblock %}
