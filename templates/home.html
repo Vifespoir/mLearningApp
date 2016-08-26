@@ -1,0 +1,56 @@
+{% extends "layout.html" %}
+{% block body %}
+
+<body class="home">
+  <!-- <link rel=stylesheet type=text/css href="allison-style.css"> -->
+  <div class=container>
+    <h1>mLearninApp</h1>
+  </div>
+
+  <div class=container>
+    <section class="jumbotron" id="content">
+      <div class=container>
+        <ul class="nav nav-pills">
+          <li role="presentation" class="active">
+            <a href="{{ url_for('upload_file') }}">
+              Change File
+            </a>
+          </li>
+          {% for simple in session['simpleOptions'] %}
+          <li role="presentation" class="active">
+            <a href="{{ url_for('plot', name=session['name'], methodName=simple) }}">
+              {{ simple }}
+            </a>
+          </li>
+          {% endfor %}
+        </ul>
+        <ul>
+        </ul>
+        <ul class="nav nav-pills">
+          {% for complex in session['complexOptions'] %}
+          <li role="presentation" class="active">
+            <a href="{{ url_for(complex, name=session['name']) }}">
+              {{ complex }}
+            </a>
+          </li>
+          {% endfor %}
+          <li>
+            <form>
+              <input type="checkbox" aria-label="Normalization Choice" name="normalized" value=True id=normalized>Normalization
+              <button type="submit" class="btn btn-default" value=Submit>Submit</button>
+            </form><!-- Form Group -->
+          </li>
+        </ul>
+        <ul>
+      </ul>
+        {% for message in get_flashed_messages() %}
+        <div class="alert alert-warning" role="alert">{{ message }}</div>
+        {% endfor %}
+        {% block plot %}
+        <!-- content pulled from other templates -->
+        {% endblock %}
+      </div>
+    </section>
+  </div>
+</body>
+{% endblock %}

@@ -2,15 +2,14 @@
 
 # all the imports
 import os
-import sqlite3
-from flask import Flask, request, session, g, redirect, url_for, abort, render_template, flash, send_from_directory
+from flask import Flask, request, session, g, redirect, url_for, render_template, flash  # send_from_directory, abort
 from werkzeug.utils import secure_filename
-from werkzeug.local import LocalProxy
 import logging
 from mLearning.dataPlot import DataPlot
 from bokeh.resources import INLINE
 from bokeh.embed import components
 import inspect
+import ast
 
 
 logging.basicConfig(
@@ -58,10 +57,11 @@ def upload_file():
             flash('No selected file')
             return redirect(request.url)
         if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            flash('%s has been successfully uploaded' % filename)
-            return redirect(url_for('visualize_options', filename=filename))
+            session['filename'] = secure_filename(file.filename)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], session['filename']))
+            flash('%s has been successfully uploaded' % session['filename'])
+            session['name'], session['extension'] = session['filename'].split('.', 1)
+            return redirect(url_for('visualize_options', name=session['name']))
 
     return render_template('upload.html')
 
@@ -69,18 +69,18 @@ def upload_file():
 # @app.route('/uploads/<filename>')
 # def uploaded_file(filename):
 #     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
-
-
-def getitem(obj, item, default):
-    if item not in obj:
-        return default
-    else:
-        return obj[item]
+#
+# def getitem(obj, item, default):
+#     if item not in obj:
+#         return default
+#     else:
+#         return obj[item]
 
 # TODO implement session clean urls
 
-@app.route('/<filename>', methods=['GET', 'POST'])
-def visualize_options(filename):
+
+@app.route('/<name>', methods=['GET', 'POST'])
+def visualize_options(name):
     logging.debug('Visualizing options...')
 
     # TODO Generate method name automatically
@@ -88,49 +88,29 @@ def visualize_options(filename):
     simpleMethodNames = ['boxplot_all_quartiles', 'parallel_coordinates_graph', 'heatmap_pearson_correlation']
     complexMethodNames = ['cross_plotting_pair_of_attributes', 'transpose_index', 'plot_target_correlation']
 
-    templateDict = dict(simpleOptions=simpleMethodNames,
-                        complexOptions=complexMethodNames)
-    logging.debug('Method names: %s' % templateDict)
+    session['simpleOptions'] = simpleMethodNames
+    session['complexOptions'] = complexMethodNames
+
+    session['dataStatus'] = False
 
     if request.method == 'POST':
         logging.debug('POST form: %s' % [item for item in request.form.items()])
 
-        normalized = request.form['normalized']
-        logging.debug('Normalization status: %s' % normalized)
-        if normalized == 'True':
-            dataStatus = True
-        else:
-            dataStatus = False
+        session['dataStatus'] = request.form['normalized']
 
-        methodName = request.form['option']
-        logging.debug('DataPlot method to be called: %s' % methodName)
-        if methodName in simpleMethodNames:
-            logging.debug('Simple Method')
-            try:
-                return redirect(url_for('plot', filename=filename, methodName=methodName, dataStatus=dataStatus))
-            except Exception as e:
-                flash('Internal error: %s' % e)
-                logging.debug('Internal error: %s' % e)
-        elif methodName in complexMethodNames:
-            logging.debug('Complex Method')
-            try:
-                return redirect(url_for(methodName, filename=filename, methodName=methodName, dataStatus=dataStatus))
-            except Exception as e:
-                flash('Internal error: %s' % e)
-                logging.debug('Internal error: %s' % e)
-        else:
-            flash('Internal error: the method called is not available.')
-            logging.debug('Internal error: the method called is not available.')
+        logging.debug('Normalization status: %s' % session['dataStatus'])
 
     logging.debug('Options visualized...')
-    return render_template('simple_options.html', **templateDict)
+    return render_template('home.html')
 
 
-@app.route('/uploads/<filename>/<dataStatus>/<methodName>')
-def plot(filename, dataStatus, methodName):
+@app.route('/<name>/<methodName>')
+def plot(name, methodName):
     logging.debug('App Plot starting...')
-    logging.debug('Normalization Status: %s' % dataStatus)
-    dataPlot = DataPlot(tableName='us-veggies', dataFile='uploads/' + filename, normalized=dataStatus)
+    logging.debug('Normalization Status: %s' % session['dataStatus'])
+    dataPlot = DataPlot(tableName='us-veggies',
+                        dataFile='uploads/' + session['filename'],
+                        normalized=session['dataStatus'])
     logging.debug('dataPlot Status: %s' % dataPlot.normalized)
     methods = dict(inspect.getmembers(dataPlot, predicate=inspect.ismethod))
     method = methods[methodName]
@@ -151,17 +131,19 @@ def plot(filename, dataStatus, methodName):
                            name=plot.plotName)
 
 
-@app.route('/uploads/<filename>/<dataStatus>/cross_plotting_pair_of_attributes/<methodName>', methods=['GET', 'POST'])
-def cross_plotting_pair_of_attributes(filename, dataStatus, methodName):
+@app.route('/<name>/cross_plotting_pair_of_attributes', methods=['GET', 'POST'])
+def cross_plotting_pair_of_attributes(name):
     logging.debug('App Cross Plot starting...')
-    dataPlot = DataPlot(tableName='us-veggies', dataFile='uploads/' + filename, normalized=dataStatus)
+    dataPlot = DataPlot(tableName='us-veggies',
+                        dataFile='uploads/' + session['filename'],
+                        normalized=session['dataStatus'])
     columns = dataPlot.data.columns
     if request.method == 'POST':
         logging.debug('POST form: %s' % [item for item in request.form.items()])
         firstCol, secondCol = request.form['firstCol'], request.form['secondCol']
 
         methods = dict(inspect.getmembers(dataPlot, predicate=inspect.ismethod))
-        method = methods[methodName]
+        method = methods['cross_plotting_pair_of_attributes']
         plot = method(firstCol, secondCol)
 
         js_resources = INLINE.render_js()
@@ -169,7 +151,7 @@ def cross_plotting_pair_of_attributes(filename, dataStatus, methodName):
 
         script, div = components(plot.document(), INLINE)
 
-        return render_template(methodName + '.html',
+        return render_template('cross_plotting_pair_of_attributes' + '.html',
                                columns=columns,
                                plot_script=script,
                                plot_div=div,
@@ -177,7 +159,7 @@ def cross_plotting_pair_of_attributes(filename, dataStatus, methodName):
                                css_resources=css_resources,
                                name=plot.plotName)
 
-    return render_template(methodName + '.html',
+    return render_template('cross_plotting_pair_of_attributes' + '.html',
                            columns=columns,
                            plot_script=None,
                            plot_div=None,
@@ -186,11 +168,13 @@ def cross_plotting_pair_of_attributes(filename, dataStatus, methodName):
                            name=None)
 
 
-@app.route('/uploads/<filename>/<dataStatus>/transpose_index/<methodName>', methods=['GET', 'POST'])
-def transpose_index(filename, dataStatus, methodName):
-    dataPlot = DataPlot(tableName='us-veggies', dataFile='uploads/' + filename, normalized=dataStatus)
+@app.route('/<name>/transpose_index', methods=['GET', 'POST'])
+def transpose_index(name):
+    dataPlot = DataPlot(tableName='us-veggies',
+                        dataFile='uploads/' + session['filename'],
+                        normalized=session['dataStatus'])
     methods = dict(inspect.getmembers(dataPlot, predicate=inspect.ismethod))
-    method = methods[methodName]
+    method = methods['transpose_index']
     transpose_index = method()
     logging.debug(plot)
 
@@ -205,20 +189,23 @@ def transpose_index(filename, dataStatus, methodName):
                           name=fig))
     logging.debug(plots)
 
-    return render_template(methodName + '.html', js_resources=js_resources,
+    return render_template('transpose_index' + '.html', js_resources=js_resources,
                            css_resources=css_resources, plots=plots)
 
 
-@app.route('/uploads/<filename>/<dataStatus>/plot_target_correlation/<methodName>', methods=['GET', 'POST'])
-def plot_target_correlation(filename, dataStatus, methodName):
-    dataPlot = DataPlot(tableName='us-veggies', dataFile='uploads/' + filename, normalized=dataStatus)
+@app.route('/<name>/plot_target_correlation', methods=['GET', 'POST'])
+def plot_target_correlation(name):
+    dataPlot = DataPlot(tableName='us-veggies',
+                        dataFile='uploads/' + session['filename'],
+                        normalized=session['dataStatus'])
     columns = dataPlot.numericData.columns
+
     if request.method == 'POST':
         logging.debug('POST form: %s' % [item for item in request.form.items()])
         firstCol = request.form['firstCol']
 
         methods = dict(inspect.getmembers(dataPlot, predicate=inspect.ismethod))
-        method = methods[methodName]
+        method = methods['plot_target_correlation']
         plot = method(firstCol)
 
         js_resources = INLINE.render_js()
@@ -226,7 +213,7 @@ def plot_target_correlation(filename, dataStatus, methodName):
 
         script, div = components(plot.document(), INLINE)
 
-        return render_template(methodName + '.html',
+        return render_template('plot_target_correlation' + '.html',
                                columns=columns,
                                plot_script=script,
                                plot_div=div,
@@ -234,7 +221,7 @@ def plot_target_correlation(filename, dataStatus, methodName):
                                css_resources=css_resources,
                                name=plot.plotName)
 
-    return render_template(methodName + '.html',
+    return render_template('plot_target_correlation' + '.html',
                            columns=columns,
                            plot_script=None,
                            plot_div=None,

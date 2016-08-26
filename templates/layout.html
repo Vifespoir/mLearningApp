@@ -14,19 +14,5 @@
   <script src="{{ url_for('static', filename='jquery-ui.min.js') }}"></script> -->
 </head>
 
-<body class="home">
-  <!-- <link rel=stylesheet type=text/css href="allison-style.css"> -->
-  <div class=container>
-    <h1>mLearninApp</h1>
-  </div>
-  <div class=container>
-    <section class="jumbotron" id="content">
-      {% for message in get_flashed_messages() %}
-      <div class=flash>{{ message }}</div>
-      {% endfor %}
-      {% block body %}
-      <!-- content pulled from other templates -->
-      {% endblock %}
-    </section>
-  </div>
-</body>
+{% block body %}
+{% endblock %}
