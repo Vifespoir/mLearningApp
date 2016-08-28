@@ -10,7 +10,7 @@ from bokeh.resources import INLINE
 from bokeh.embed import components
 import inspect
 import ast
-
+from secret import SECRET_KEY
 
 logging.basicConfig(
     level=logging.DEBUG, format=' %(asctime)s - %(levelname)s - %(message)s')
@@ -23,7 +23,7 @@ app.config.from_object(__name__)
 app.config.update(dict(
     DATABASE=os.path.join(app.root_path, 'FLASKR.db'),
     DEBUG=True,
-    SECRET_KEY='dSjt+xSuRkuVFeIbWvPQcVcrNrVUz3gezuU3MvVbDX+70UOpgIanCXBzWFVfgBiMzuShjkdM3uTAhNGNTU7pHg==',
+    SECRET_KEY=SECRET_KEY,
     UPLOAD_FOLDER='uploads/',
     MAX_CONTENT_LENGTH=16 * 1024 * 1024
 ))
