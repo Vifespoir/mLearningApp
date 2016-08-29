@@ -56,6 +56,7 @@ def upload_file():
         if file.filename == '':
             flash('No selected file')
             return redirect(request.url)
+
         if file and allowed_file(file.filename):
             session['filename'] = secure_filename(file.filename)
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], session['filename']))
@@ -91,26 +92,29 @@ def visualize_options(name):
     session['simpleOptions'] = simpleMethodNames
     session['complexOptions'] = complexMethodNames
 
-    session['dataStatus'] = False
-
-    if request.method == 'POST':
-        logging.debug('POST form: %s' % [item for item in request.form.items()])
-
-        session['dataStatus'] = request.form['normalized']
-
-        logging.debug('Normalization status: %s' % session['dataStatus'])
-
     logging.debug('Options visualized...')
     return render_template('home.html')
 
 
-@app.route('/<name>/<methodName>')
+@app.route('/<name>/<methodName>', methods=['GET', 'POST'])
 def plot(name, methodName):
     logging.debug('App Plot starting...')
-    logging.debug('Normalization Status: %s' % session['dataStatus'])
-    dataPlot = DataPlot(tableName='us-veggies',
-                        dataFile='uploads/' + session['filename'],
-                        normalized=session['dataStatus'])
+
+    try:
+        dataStatus = ast.literal_eval(request.args['normalized'])
+        logging.debug('Normalization Input: %s' % dataStatus)
+        flash('Data Normalized: %s' % dataStatus)
+    except Exception:
+        dataStatus = False
+
+    try:
+        dataPlot = DataPlot(tableName='us-veggies',
+                            dataFile='uploads/' + session['filename'],
+                            normalized=dataStatus)
+    except KeyError:
+        flash('Session Expired')
+        return redirect(url_for('upload_file'))
+
     logging.debug('dataPlot Status: %s' % dataPlot.normalized)
     methods = dict(inspect.getmembers(dataPlot, predicate=inspect.ismethod))
     method = methods[methodName]
@@ -134,9 +138,22 @@ def plot(name, methodName):
 @app.route('/<name>/cross_plotting_pair_of_attributes', methods=['GET', 'POST'])
 def cross_plotting_pair_of_attributes(name):
     logging.debug('App Cross Plot starting...')
-    dataPlot = DataPlot(tableName='us-veggies',
-                        dataFile='uploads/' + session['filename'],
-                        normalized=session['dataStatus'])
+
+    try:
+        dataStatus = ast.literal_eval(request.args['normalized'])
+        logging.debug('Normalization Input: %s' % dataStatus)
+        flash('Data Normalized: %s' % dataStatus)
+    except Exception:
+        dataStatus = False
+
+    try:
+        dataPlot = DataPlot(tableName='us-veggies',
+                            dataFile='uploads/' + session['filename'],
+                            normalized=dataStatus)
+    except KeyError:
+        flash('Session Expired')
+        return redirect(url_for('upload_file'))
+
     columns = dataPlot.data.columns
     if request.method == 'POST':
         logging.debug('POST form: %s' % [item for item in request.form.items()])
@@ -170,9 +187,22 @@ def cross_plotting_pair_of_attributes(name):
 
 @app.route('/<name>/transpose_index', methods=['GET', 'POST'])
 def transpose_index(name):
-    dataPlot = DataPlot(tableName='us-veggies',
-                        dataFile='uploads/' + session['filename'],
-                        normalized=session['dataStatus'])
+
+    try:
+        dataStatus = ast.literal_eval(request.args['normalized'])
+        logging.debug('Normalization Input: %s' % dataStatus)
+        flash('Data Normalized: %s' % dataStatus)
+    except Exception:
+        dataStatus = False
+
+    try:
+        dataPlot = DataPlot(tableName='us-veggies',
+                            dataFile='uploads/' + session['filename'],
+                            normalized=dataStatus)
+    except KeyError:
+        flash('Session Expired')
+        return redirect(url_for('upload_file'))
+
     methods = dict(inspect.getmembers(dataPlot, predicate=inspect.ismethod))
     method = methods['transpose_index']
     transpose_index = method()
@@ -195,9 +225,22 @@ def transpose_index(name):
 
 @app.route('/<name>/plot_target_correlation', methods=['GET', 'POST'])
 def plot_target_correlation(name):
-    dataPlot = DataPlot(tableName='us-veggies',
-                        dataFile='uploads/' + session['filename'],
-                        normalized=session['dataStatus'])
+
+    try:
+        dataStatus = ast.literal_eval(request.args['normalized'])
+        logging.debug('Normalization Input: %s' % dataStatus)
+        flash('Data Normalized: %s' % dataStatus)
+    except Exception:
+        dataStatus = False
+
+    try:
+        dataPlot = DataPlot(tableName='us-veggies',
+                            dataFile='uploads/' + session['filename'],
+                            normalized=dataStatus)
+    except KeyError:
+        flash('Session Expired')
+        return redirect(url_for('upload_file'))
+
     columns = dataPlot.numericData.columns
 
     if request.method == 'POST':
