@@ -230,9 +230,5 @@ def plot_target_correlation(name):
                            name=None)
 
 
-def main():
-    app.debug = True
-    app.run()
-
 if __name__ == "__main__":
-    main()
+    app.run(host='0.0.0.0', port=5001)
