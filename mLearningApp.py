@@ -39,7 +39,7 @@ def allowed_file(filename):
 
 
 @app.route('/')
-def root():
+def home():
     return redirect(url_for('upload_file'))
 
 
