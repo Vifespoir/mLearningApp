@@ -6,6 +6,6 @@ processes = 1
 
 socket = mLearningApp.sock
 chmod-socket = 660
-vacuum = true
+vacuum = True
 
-die-on-term = true
+die-on-term = True
