@@ -206,7 +206,6 @@ def transpose_index(name):
     methods = dict(inspect.getmembers(dataPlot, predicate=inspect.ismethod))
     method = methods['transpose_index']
     transpose_index = method()
-    logging.debug(plot)
 
     js_resources = INLINE.render_js()
     css_resources = INLINE.render_css()
@@ -217,7 +216,6 @@ def transpose_index(name):
         plots.append(dict(plot_script=script,
                           plot_div=div,
                           name=fig))
-    logging.debug(plots)
 
     return render_template('transpose_index' + '.html', js_resources=js_resources,
                            css_resources=css_resources, plots=plots)
