@@ -14,5 +14,10 @@
   <script src="{{ url_for('static', filename='jquery-ui.min.js') }}"></script> -->
 </head>
 <!-- <link rel=stylesheet type=text/css href="allison-style.css"> -->
-{% block content %}
-{% endblock %}
+<body>
+  <style type="text/css">
+   body { background: transaparent !important; } /* Adding !important forces the browser to overwrite the default style applied by Bootstrap */
+  </style>
+  {% block content %}
+  {% endblock %}
+</body>
