@@ -1,6 +1,6 @@
 {% extends "layout.html" %}
 {% block content %}
-<div class=container id="content">
+<div class=container-fluid id="content">
   {% if get_flashed_messages()[-1] %}
   <div class="alert alert-warning" role="alert">{{ get_flashed_messages()[-1] }}</div>
   {% endif %}
