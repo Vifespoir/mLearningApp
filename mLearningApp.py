@@ -11,6 +11,7 @@ from bokeh.embed import components
 import inspect
 import ast
 from secret import SECRET_KEY
+from os import listdir
 
 logging.basicConfig(
     level=logging.DEBUG, format=' %(asctime)s - %(levelname)s - %(message)s')
@@ -40,7 +41,7 @@ def allowed_file(filename):
 
 @app.route('/')
 def home():
-    return redirect(url_for('upload_file'))
+    return redirect(url_for('choose_file'))
 
 
 @app.route('/upload', methods=['GET', 'POST'])
@@ -67,6 +68,17 @@ def upload_file():
     return render_template('upload.html')
 
 
+@app.route('/files')
+def choose_file():
+    try:
+        files = listdir('/upload')
+        files = [f[0] for f.split('.', 1) in files]
+        flash('%s file(s) found.' % len(files))
+    except OSError:
+        return redirect(url_for('upload_file'))
+    else:
+        return render_template(choose_file.html, files=files)
+
 # @app.route('/uploads/<filename>')
 # def uploaded_file(filename):
 #     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
@@ -76,8 +88,6 @@ def upload_file():
 #         return default
 #     else:
 #         return obj[item]
-
-# TODO implement session clean urls
 
 
 @app.route('/<name>', methods=['GET', 'POST'])

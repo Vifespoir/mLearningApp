@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="jumbotron">
+  {% if get_flashed_messages()[-1] %}
+  <div class="alert alert-warning" role="alert">{{ get_flashed_messages()[-1] }}</div>
+  {% endif %}
+  <h2>Choose a File</h2>
+  <table>
+  {% for file in files %}
+  <tr>
+    <a href="{{ url_for('visualize_options', name=file) }}">
+      {{ file }}
+    </a>
+  </tr>
+  {% endfor %}
+  </table>
+</div>
+{% endblock %}
