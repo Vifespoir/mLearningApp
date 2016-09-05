@@ -1,49 +1,47 @@
 {% extends "base.html" %}
 {% block content %}
 
-<div class=container id="content">
-  <div class="jumbotron">
-    <div class=container-fluid>
-      {% if get_flashed_messages()[-1] %}
-      <div class="alert alert-warning" role="alert">{{ get_flashed_messages()[-1] }}</div>
-      {% endif %}
-      <ul class="nav nav-pills">
-        <li role="presentation" class="active">
-          <a href="{{ url_for('upload_file') }}">
-            Change File
-          </a>
-        </li>
-        {% for simple in session['simpleOptions'] %}
-        <li role="presentation" class="active">
-          <a href="{{ url_for('plot', name=session['name'], methodName=simple) }}">
-            {{ simple }}
-          </a>
-        </li>
-        {% endfor %}
-      </ul>
-      <ul>
-      </ul>
-      <ul class="nav nav-pills">
-        {% for complex in session['complexOptions'] %}
-        <li role="presentation" class="active">
-          <a href="{{ url_for(complex, name=session['name']) }}">
-            {{ complex }}
-          </a>
-        </li>
-        {% endfor %}
-        <li>
-          <form method=get action="">
-            <button type="checkbox" class="btn btn-default" name=normalized id=normalized value=True>Normalize</button>
-            <button type="checkbox" class="btn btn-default" name=normalized id=normalized value=False>Reset</button>
-          </form><!-- Form Group -->
-        </li>
-      </ul>
-      <ul>
+<div class="jumbotron">
+  <div class=container-fluid>
+    {% if get_flashed_messages()[-1] %}
+    <div class="alert alert-warning" role="alert">{{ get_flashed_messages()[-1] }}</div>
+    {% endif %}
+    <ul class="nav nav-pills">
+      <li role="presentation" class="active">
+        <a href="{{ url_for('upload_file') }}">
+          Change File
+        </a>
+      </li>
+      {% for simple in session['simpleOptions'] %}
+      <li role="presentation" class="active">
+        <a href="{{ url_for('plot', name=session['name'], methodName=simple) }}">
+          {{ simple }}
+        </a>
+      </li>
+      {% endfor %}
     </ul>
-    {% block plot %}
-    <!-- content pulled from other templates -->
-    {% endblock %}
-    </div>
+    <ul>
+    </ul>
+    <ul class="nav nav-pills">
+      {% for complex in session['complexOptions'] %}
+      <li role="presentation" class="active">
+        <a href="{{ url_for(complex, name=session['name']) }}">
+          {{ complex }}
+        </a>
+      </li>
+      {% endfor %}
+      <li>
+        <form method=get action="">
+          <button type="checkbox" class="btn btn-default" name=normalized id=normalized value=True>Normalize</button>
+          <button type="checkbox" class="btn btn-default" name=normalized id=normalized value=False>Reset</button>
+        </form><!-- Form Group -->
+      </li>
+    </ul>
+    <ul>
+  </ul>
+  {% block plot %}
+  <!-- content pulled from other templates -->
+  {% endblock %}
   </div>
 </div>
 {% endblock %}
