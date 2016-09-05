@@ -72,7 +72,7 @@ def upload_file():
 def choose_file():
     try:
         files = listdir('/upload')
-        files = [f[0] for f.split('.', 1) in files]
+        files = [f.split('.', 1)[0] for f in files]
         flash('%s file(s) found.' % len(files))
     except OSError:
         return redirect(url_for('upload_file'))
