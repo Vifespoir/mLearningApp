@@ -16,7 +16,7 @@ logging.basicConfig(
     level=logging.DEBUG, format=' %(asctime)s - %(levelname)s - %(message)s')
 
 # create our little application :)
-app = Flask(__name__)
+app = Flask(__name__, static_folder='/home/vifespoir/static')
 app.config.from_object(__name__)
 
 # Load default config and override config from an environment variable
