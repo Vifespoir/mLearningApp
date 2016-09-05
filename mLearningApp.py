@@ -71,13 +71,13 @@ def upload_file():
 @app.route('/files')
 def choose_file():
     try:
-        files = listdir('/upload')
-        files = [f.split('.', 1)[0] for f in files]
+        files = listdir(app.config['UPLOAD_FOLDER'])
         flash('%s file(s) found.' % len(files))
-    except OSError:
+    except OSError as e:
+        logging.debug('Error when loading files %s' % e)
         return redirect(url_for('upload_file'))
     else:
-        return render_template(choose_file.html, files=files)
+        return render_template('choose_file.html', files=files)
 
 # @app.route('/uploads/<filename>')
 # def uploaded_file(filename):
@@ -95,6 +95,9 @@ def visualize_options(name):
     logging.debug('Visualizing options...')
 
     # TODO Generate method name automatically
+
+    session.setdefault('filename', name)
+    session.setdefault('name', name.split('.', 1)[0])
 
     simpleMethodNames = ['boxplot_all_quartiles', 'parallel_coordinates_graph', 'heatmap_pearson_correlation']
     complexMethodNames = ['cross_plotting_pair_of_attributes', 'transpose_index', 'plot_target_correlation']
@@ -123,7 +126,7 @@ def plot(name, methodName):
                             normalized=dataStatus)
     except KeyError:
         flash('Session Expired')
-        return redirect(url_for('upload_file'))
+        return redirect(url_for('choose_file'))
 
     logging.debug('dataPlot Status: %s' % dataPlot.normalized)
     methods = dict(inspect.getmembers(dataPlot, predicate=inspect.ismethod))
@@ -162,7 +165,7 @@ def cross_plotting_pair_of_attributes(name):
                             normalized=dataStatus)
     except KeyError:
         flash('Session Expired')
-        return redirect(url_for('upload_file'))
+        return redirect(url_for('choose_file'))
 
     columns = dataPlot.data.columns
     if request.method == 'POST':
@@ -211,7 +214,7 @@ def transpose_index(name):
                             normalized=dataStatus)
     except KeyError:
         flash('Session Expired')
-        return redirect(url_for('upload_file'))
+        return redirect(url_for('choose_file'))
 
     methods = dict(inspect.getmembers(dataPlot, predicate=inspect.ismethod))
     method = methods['transpose_index']
@@ -247,7 +250,7 @@ def plot_target_correlation(name):
                             normalized=dataStatus)
     except KeyError:
         flash('Session Expired')
-        return redirect(url_for('upload_file'))
+        return redirect(url_for('choose_file'))
 
     columns = dataPlot.numericData.columns
 
