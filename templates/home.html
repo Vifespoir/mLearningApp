@@ -2,46 +2,58 @@
 {% block content %}
 
 <div class="jumbotron">
-  <div class=container-fluid>
+  <div class="row">
     {% if get_flashed_messages()[-1] %}
-    <div class="alert alert-warning" role="alert">{{ get_flashed_messages()[-1] }}</div>
+    <div class="alert alert-warning col-xs-12 col-sm-10 col-md-8 col-lg-6" role="alert">{{ get_flashed_messages()[-1] }}</div>
     {% endif %}
-    <ul class="nav nav-pills">
-      <li role="presentation" class="active">
-        <a href="{{ url_for('upload_file') }}">
-          Change File
-        </a>
-      </li>
-      {% for simple in session['simpleOptions'] %}
-      <li role="presentation" class="active">
-        <a href="{{ url_for('plot', name=session['name'], methodName=simple) }}">
-          {{ simple }}
-        </a>
-      </li>
-      {% endfor %}
-    </ul>
-    <ul>
-    </ul>
-    <ul class="nav nav-pills">
-      {% for complex in session['complexOptions'] %}
-      <li role="presentation" class="active">
-        <a href="{{ url_for(complex, name=session['name']) }}">
-          {{ complex }}
-        </a>
-      </li>
-      {% endfor %}
-      <li>
+  </div>
+  <div class="row">
+    <div class="container-fluid col-md-12 col-lg-3">
+      <ul class="nav nav-pills nav-stacked">
+        <li role="presentation" class="active">
+          <a href="{{ url_for('upload_file') }}">
+            Change File
+          </a>
+        </li>
+      </ul>
+      <ul>
+      </ul>
+      <ul class="nav nav-pills nav-stacked">
+        {% for simple in session['simpleOptions'] %}
+        <li role="presentation" class="active">
+          <a href="{{ url_for('plot', name=session['name'], methodName=simple) }}">
+            {{ simple }}
+          </a>
+        </li>
+        {% endfor %}
+      </ul>
+      <ul>
+      </ul>
+      <ul class="nav nav-pills nav-stacked">
+        {% for complex in session['complexOptions'] %}
+        <li role="presentation" class="active">
+          <a href="{{ url_for(complex, name=session['name']) }}">
+            {{ complex }}
+          </a>
+        </li>
+        {% endfor %}
+      </ul>
+      <ul>
+      </ul>
+      <div>
         <form method=get action="">
-          <button type="checkbox" class="btn btn-default" name=normalized id=normalized value=True>Normalize</button>
-          <button type="checkbox" class="btn btn-default" name=normalized id=normalized value=False>Reset</button>
+          <button type="checkbox" class="btn btn-info" name=normalized id=normalized value=True>Normalize</button>
+          <button type="checkbox" class="btn btn-info" name=normalized id=normalized value=False>Reset</button>
         </form><!-- Form Group -->
-      </li>
-    </ul>
-    <ul>
-  </ul>
-  {% block plot %}
-  <!-- content pulled from other templates -->
-  {% endblock %}
+      </div>
+      <ul>
+      </ul>
+    </div>
+    <div class="col-md-12 col-lg-9">
+      {% block plot %}
+      <!-- content pulled from other templates -->
+      {% endblock %}
+    </div>
   </div>
 </div>
 {% endblock %}
