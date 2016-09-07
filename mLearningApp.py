@@ -17,17 +17,17 @@ logging.basicConfig(
     level=logging.DEBUG, format=' %(asctime)s - %(levelname)s - %(message)s')
 
 # create our little application :)
-app = Flask(__name__, static_folder='/home/vifespoir/static')
+app = Flask(__name__)
 app.config.from_object(__name__)
 
 # Load default config and override config from an environment variable
 app.config.update(dict(
-    DATABASE=os.path.join(app.root_path, 'FLASKR.db'),
-    DEBUG=True,
     SECRET_KEY=SECRET_KEY,
     UPLOAD_FOLDER='uploads/',
-    MAX_CONTENT_LENGTH=16 * 1024 * 1024
+    MAX_CONTENT_LENGTH=16 * 1024 * 1024,
+    static_folder='/home/vifespoir/static'
 ))
+
 app.config.from_envvar('FLASKR_SETTINGS', silent=True)
 
 # Constants
