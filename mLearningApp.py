@@ -11,7 +11,8 @@ from bokeh.embed import components
 import inspect
 import ast
 from secret import SECRET_KEY
-from os import listdir
+from os import listdir  # getcwd
+# from jinja2 import FileSystemLoader
 
 logging.basicConfig(
     level=logging.DEBUG, format=' %(asctime)s - %(levelname)s - %(message)s')
@@ -29,6 +30,10 @@ app.config.update(dict(
 ))
 
 app.config.from_envvar('FLASKR_SETTINGS', silent=True)
+
+# TODO make the following works
+# loader = FileSystemLoader(getcwd() + '/templates/', followlinks=True)
+# app.jinja_loader = loader
 
 # Constants
 ALLOWED_EXTENSIONS = ['csv']
