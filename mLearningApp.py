@@ -96,6 +96,7 @@ def upload_file():
 
 @app.route('/files')
 def choose_file():
+    session['currentFile'] = None
     try:
         files = listdir(app.config['UPLOAD_FOLDER'])
         flash('%s file(s) found.' % len(files), 'alert-info')
@@ -128,11 +129,14 @@ def visualize_options(name):
     session['simpleOptions'] = SIMPLE_METHOD_NAMES
     session['complexOptions'] = COMPLEX_METHOD_NAMES
 
+    session['methodName'] = None
+    session['currentFile'] = name
+
     logging.debug('Options visualized...')
     return render_template('choose_plot.html')
 
 
-@app.route('/<name>/simple/<methodName>', methods=['GET', 'POST'])
+@app.route('/<name>/s/<methodName>', methods=['GET', 'POST'])
 def plot(name, methodName):
     logging.debug('App Plot starting...')
 
@@ -169,11 +173,11 @@ def plot(name, methodName):
 
     else:
         logging.debug('URL_FOR %s' % session['methodName'])
-        return redirect(url_for(session['methodName'], name=session['name'], methodName=session['methodName']))
+        return redirect(url_for(session['methodName'], name=session['name']))
 
 
-@app.route('/<name>/complex/<methodName>', methods=['GET', 'POST'])
-def cross_plotting_pair_of_attributes(name, methodName):
+@app.route('/<name>/c/cross_plotting_pair_of_attributes', methods=['GET', 'POST'])
+def cross_plotting_pair_of_attributes(name):
     logging.debug('App Cross Plot starting...')
     dataPlot = DataPlot(tableName='us-veggies',
                         dataFile='uploads/' + session['filename'],
@@ -212,8 +216,8 @@ def cross_plotting_pair_of_attributes(name, methodName):
                            name=None)
 
 
-@app.route('/<name>/complex/<methodName>', methods=['GET', 'POST'])
-def transpose_index(name, methodName):
+@app.route('/<name>/c/transpose_index', methods=['GET', 'POST'])
+def transpose_index(name):
     logging.debug('App Transpose Index starting...')
     dataPlot = DataPlot(tableName='us-veggies',
                         dataFile='uploads/' + session['filename'],
@@ -239,8 +243,8 @@ def transpose_index(name, methodName):
                            css_resources=css_resources, plots=plots)
 
 
-@app.route('/<name>/complex/<methodName>', methods=['GET', 'POST'])
-def plot_target_correlation(name, methodName):
+@app.route('/<name>/c/plot_target_correlation', methods=['GET', 'POST'])
+def plot_target_correlation(name):
     logging.debug('App Plot Target Correlation starting...')
     dataPlot = DataPlot(tableName='us-veggies',
                         dataFile='uploads/' + session['filename'],
