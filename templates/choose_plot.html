@@ -1,0 +1,39 @@
+{% extends "home.html" %}
+{% block menu %}
+<form action="{{ url_for('home') }}">
+  <input class="btn btn-info" type="submit" value="Change File">
+</form>
+<ul>
+</ul>
+<form method=get action="">
+  <button type="checkbox" class="btn btn-info" name=normalized id=normalized value=True>Normalize</button>
+  <button type="checkbox" class="btn btn-info" name=normalized id=normalized value=False>Reset</button>
+</form><!-- Form Group -->
+<ul>
+</ul>
+<ul class="nav nav-pills nav-stacked">
+  {% for simple in session['simpleOptions'] %}
+  <li role="presentation">
+    <a href="{{ url_for('plot', name=session['name'], methodName=simple) }}">
+      {{ simple }}
+    </a>
+  </li>
+  {% endfor %}
+</ul>
+<ul>
+</ul>
+<ul class="nav nav-pills nav-stacked">
+  {% for complex in session['complexOptions'] %}
+  <li role="presentation">
+    <a href="{{ url_for('plot', name=session['name'], methodName=complex) }}">
+      {{ complex }}
+    </a>
+  </li>
+  {% endfor %}
+</ul>
+<ul>
+</ul>
+{% endblock menu %}
+
+{% block display %}
+{% endblock display %}

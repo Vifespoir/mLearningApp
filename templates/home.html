@@ -1,59 +1,32 @@
 {% extends "base.html" %}
 {% block content %}
-
-<div class="jumbotron">
-  <div class="row">
-    {% if get_flashed_messages()[-1] %}
-    <div class="alert alert-warning col-xs-12 col-sm-10 col-md-8 col-lg-6" role="alert">{{ get_flashed_messages()[-1] }}</div>
-    {% endif %}
+<div class="row">
+  <div class="well well-sm col-sm-12 col-md-4 col-lg-3">
+    <h4>Machine Learning Web Application</h4>
+    {% block menu %}
+    {% endblock %}
   </div>
-  <div class="row">
-    <div class="container-fluid col-md-12 col-lg-3">
-      <ul class="nav nav-pills nav-stacked">
-        <li role="presentation" class="active">
-          <a href="{{ url_for('upload_file') }}">
-            Change File
-          </a>
-        </li>
-      </ul>
-      <ul>
-      </ul>
-      <ul class="nav nav-pills nav-stacked">
-        {% for simple in session['simpleOptions'] %}
-        <li role="presentation" class="active">
-          <a href="{{ url_for('plot', name=session['name'], methodName=simple) }}">
-            {{ simple }}
-          </a>
-        </li>
-        {% endfor %}
-      </ul>
-      <ul>
-      </ul>
-      <ul class="nav nav-pills nav-stacked">
-        {% for complex in session['complexOptions'] %}
-        <li role="presentation" class="active">
-          <a href="{{ url_for(complex, name=session['name']) }}">
-            {{ complex }}
-          </a>
-        </li>
-        {% endfor %}
-      </ul>
-      <ul>
-      </ul>
-      <div>
-        <form method=get action="">
-          <button type="checkbox" class="btn btn-info" name=normalized id=normalized value=True>Normalize</button>
-          <button type="checkbox" class="btn btn-info" name=normalized id=normalized value=False>Reset</button>
-        </form><!-- Form Group -->
-      </div>
-      <ul>
-      </ul>
+  <ul>
+  </ul>
+  <div class="col-sm-12 col-md-8 col-lg-9">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <div class="alert {{category}}" role="alert">
+      {{ message }}
     </div>
-    <div class="col-md-12 col-lg-9">
-      {% block plot %}
-      <!-- content pulled from other templates -->
-      {% endblock %}
-    </div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+    {% block display %}
+    {% endblock %}
   </div>
 </div>
+<script type="text/javascript">
+  window.setTimeout(function () {
+    $(".alert").fadeTo(500, 0).slideUp(250, function () {
+        $(this).remove();
+    });
+  }, 3000);
+</script>
 {% endblock %}
