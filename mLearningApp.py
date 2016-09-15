@@ -12,6 +12,7 @@ import inspect
 import ast
 from secret import SECRET_KEY
 from os import listdir  # getcwd
+from time import clock
 # from jinja2 import FileSystemLoader
 
 logging.basicConfig(
@@ -218,10 +219,14 @@ def cross_plotting_pair_of_attributes(name):
 
 @app.route('/<name>/c/transpose_index', methods=['GET', 'POST'])
 def transpose_index(name):
+    start = clock()
     logging.debug('App Transpose Index starting...')
     dataPlot = DataPlot(tableName='us-veggies',
                         dataFile='uploads/' + session['filename'],
                         normalized=session['dataStatus'])
+
+    elapsed = clock() - start
+    logging.debug('Time elapsed to dataPlot: %s' % elapsed)
 
     logging.debug('dataPlot Status: %s' % dataPlot.normalized)
 
@@ -229,18 +234,50 @@ def transpose_index(name):
     method = methods[session['methodName']]
     transpose_index = method()
 
+    elapsed = clock() - start
+    logging.debug('Time elapsed to transpose_index: %s' % elapsed)
+
     js_resources = INLINE.render_js()
     css_resources = INLINE.render_css()
 
-    plots = []
-    for fig in transpose_index:
-        script, div = components(transpose_index[fig], INLINE)
-        plots.append(dict(plot_script=script,
-                          plot_div=div,
-                          name=fig))
+    if request.method == 'POST':
+        logging.debug('POST form: %s' % [item for item in request.form.items()])
+        if 'next' in request.form:
+            logging.debug('Next')
+            if session['position'] < len(session['plots']):
+                session['position'] += 1  # moves to the next stored plot
+                script, div, name = session['plots'][session['position']]
+            else:
+                logging.debug('New Next')
+                session['position'] += 1
+                plot = transpose_index.__next__()
+                script, div = components(plot.document(), INLINE)
+                name = plot.plotName
+        else:
+            logging.debug('Previous')
+            if session['position'] > -1:
+                session['position'] -= 1  # moves to the previous stored plot
+                script, div, name = session['plots'][session['position']]
+            else:
+                logging.debug('No more Previous')
+                session['position'] = 0  # moves to the first plot
+                script, div, name = session['plots'][session['position']]
+    else:
+        logging.debug('First')
+        session['plots'] = []
+        session['position'] = 0
+        plot = transpose_index.__next__()
+        script, div = components(plot.document(), INLINE)
+        name = plot.plotName
 
-    return render_template(session['methodName'] + '.html', js_resources=js_resources,
-                           css_resources=css_resources, plots=plots)
+    session['plots'].append((script, div, name))
+
+    return render_template(session['methodName'] + '.html',
+                           plot_script=script,
+                           plot_div=div,
+                           js_resources=js_resources,
+                           css_resources=css_resources,
+                           name=name)
 
 
 @app.route('/<name>/c/plot_target_correlation', methods=['GET', 'POST'])
