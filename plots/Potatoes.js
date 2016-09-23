@@ -1,1 +1,0 @@
-$( "#Potatoes" ).load( "/veggies-imp/c/transpose_index/html/Potatoes" );

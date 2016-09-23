@@ -1,1 +1,0 @@
-$( "#Lettuce_head" ).load( "/veggies-imp/c/transpose_index/html/Lettuce_head" );

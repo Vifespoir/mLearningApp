@@ -1,1 +1,0 @@
-$( "#Pulses_other" ).load( "/veggies-imp/c/transpose_index/html/Pulses_other" );
