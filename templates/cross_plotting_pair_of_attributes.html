@@ -1,55 +1,54 @@
-{% extends "home.html" %}
-{% block plot %}
-<h2>Plot Options</h2>
-<form action="" method=post enctype=multipart/form-data>
-  <table style="width:100%">
-    <tr>
-      <label for=firstCol>
-        <td>
-          <h4>Y Axis</h4>
-        </td>
-        {% for col in columns %}
-        {% if loop.first %}
-        <td>
-          <input type=radio id=firstCol name=firstCol value={{col}} checked> {{col}}
-        </td>
-        {% else %}
-        <td>
-          <input type=radio id=firstCol name=firstCol value={{col}}> {{col}}
-        </td>
-        {% endif %}
-        {% endfor %}
-      </label>
-    </tr>
-    <tr>
-      <label for=secondCol>
-        <td>
-          <h4>Y Axis</h4>
-        </td>
-        {% for col in columns %}
-        {% if loop.first %}
-        <td>
-          <input type=radio id=secondCol name=secondCol value={{col}} checked> {{col}}
-        </td>
-        {% else %}
-        <td>
-          <input type=radio id=secondCol name=secondCol value={{col}}> {{col}}
-        </td>
-        {% endif %}
-        {% endfor %}
-      </label>
-    </tr>
-  </table>
-  <input type=submit name=columns value=Submit>
-</form>
+{% extends "choose_plot.html" %}
+{% block display %}
 {% if name %}
 <section id=plot>
-  <title>{{ name }}</title>
-  {{ js_resources|indent(4)|safe }}
-  {{ css_resources|indent(4)|safe }}
+  {% include 'bokeh.html' %}
   {{ plot_script|indent(4)|safe }}
   <!-- A simple form for changing the graph -->
   {{ plot_div|indent(4)|safe }}
 </section>
 {% endif %}
+<section class="well well-sm">
+  <form action="" method=post enctype=multipart/form-data>
+    <table style="width:100%">
+      <tr>
+        <label for=firstCol>
+          <td>
+            <h5>Y Axis</h5>
+          </td>
+          {% for col in columns %}
+          {% if loop.first %}
+          <td>
+            <input type=radio id=firstCol name=firstCol value={{col}} checked> {{col}}
+          </td>
+          {% else %}
+          <td>
+            <input type=radio id=firstCol name=firstCol value={{col}}> {{col}}
+          </td>
+          {% endif %}
+          {% endfor %}
+        </label>
+      </tr>
+      <tr>
+        <label for=secondCol>
+          <td>
+            <h5>Y Axis</h5>
+          </td>
+          {% for col in columns %}
+          {% if loop.first %}
+          <td>
+            <input type=radio id=secondCol name=secondCol value={{col}} checked> {{col}}
+          </td>
+          {% else %}
+          <td>
+            <input type=radio id=secondCol name=secondCol value={{col}}> {{col}}
+          </td>
+          {% endif %}
+          {% endfor %}
+        </label>
+      </tr>
+    </table>
+    <input type=submit name=columns value=Submit>
+  </form>
+</section><!-- A simple form for changing the graph -->
 {% endblock %}

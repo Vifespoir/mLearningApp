@@ -1,0 +1,9 @@
+{% extends "choose_plot.html" %}
+{% block display %}
+<section>
+  {% include 'bokeh.html' %}
+  {{ plot_script|indent(4)|safe }}
+  <!-- A simple form for changing the graph -->
+  {{ plot_div|indent(4)|safe }}
+</section>
+{% endblock %}

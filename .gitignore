@@ -5,3 +5,5 @@ include/
 bin/
 __pycache__/
 BokehHTML/
+templates/base.html
+plots/

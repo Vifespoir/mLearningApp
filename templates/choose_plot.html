@@ -1,0 +1,51 @@
+{% extends "home.html" %}
+{% block menu %}
+<ul class="nav nav-pills nav-stacked">
+  <li role="presentation">
+    <a href="{{ url_for('home') }}" class="btn btn-default" style="max-width:140px;">Change File</a>
+  </li>
+  </br>
+  {% for simple in session['simpleOptions'] %}
+  {% if session['methodName'] == simple %}
+  <li role="presentation" class="active">
+    <a href="{{ url_for('plot', name=session['name'], methodName=simple) }}">
+      {{ simple }}
+    </a>
+  </li>
+  {% else %}
+  <li role="presentation">
+    <a href="{{ url_for('plot', name=session['name'], methodName=simple) }}">
+      {{ simple }}
+    </a>
+  </li>
+  {% endif %}
+  {% endfor %}
+  </br>
+  {% for complex in session['complexOptions'] %}
+  {% if session['methodName'] == complex %}
+  <li role="presentation" class="active">
+    <a href="{{ url_for('plot', name=session['name'], methodName=complex) }}">
+      {{ complex }}
+    </a>
+  </li>
+  {% else %}
+  <li role="presentation">
+    <a href="{{ url_for('plot', name=session['name'], methodName=complex) }}">
+      {{ complex }}
+    </a>
+  </li>
+  {% endif %}
+  {% endfor %}
+</ul>
+<ul>
+</ul>
+{% if session['methodName']%}
+<form method=get action="">
+  <button type="checkbox" class="btn btn-info" name=normalized id=normalized value=True>Normalize</button>
+  <button type="checkbox" class="btn btn-info" name=normalized id=normalized value=False>Reset</button>
+</form><!-- Form Group -->
+{% endif %}
+{% endblock menu %}
+
+{% block display %}
+{% endblock display %}

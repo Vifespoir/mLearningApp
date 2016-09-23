@@ -1,49 +1,56 @@
-{% extends "home.html" %}
-{% block plot %}
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-<script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
-{{ js_resources|indent(4)|safe }}
-{{ css_resources|indent(4)|safe }}
-<h2>Transposed Index</h2>
-<div id="transpose" class="carousel slide" data-ride="carousel" data-interval=false>
-  <!-- Indicators -->
-  <ol class="carousel-indicators">
-    {% for i in range(plots|length) %}
-    {% if loop.first %}
-    <li data-target="#transpose" data-slide-to="{{i}}" class="active"></li>
-    {% else %}
-    <li data-target="#transpose" data-slide-to="{{i}}"></li>
-    {% endif %}
-    {% endfor %}
-  </ol>
+{% extends "choose_plot.html" %}
+{% block display %}
+{% include 'bokeh.html' %}
+<section>
+  <script type="text/javascript">
+    $(function() {
+    return $(".carousel.lazy").on("slide.bs.carousel", function(ev) {
+      var lazy;
+      lazy = $(ev.relatedTarget).find("script[data-src]");
+      console.log(lazy)
+      lazy.attr("src", lazy.data('src'));
+      lazy.removeAttr("data-src");
+    });
+    });
+  </script>
+  <div id="transpose" class="carousel slide lazy" data-ride="carousel" data-interval=false>
+    <!-- Indicators -->
+    <ol class="carousel-indicators">
+      {% for i in range(plotNames|length) %}
+      {% if loop.first %}
+      <li data-target="#transpose" data-slide-to="{{i}}" class="active"></li>
+      {% else %}
+      <li data-target="#transpose" data-slide-to="{{i}}"></li>
+      {% endif %}
+      {% endfor %}
+    </ol>
 
-  <!-- Wrapper for slides -->
-  <div class="carousel-inner" role="listbox">
-    {% for plot in plots %}
-    {% if loop.first %}
-    <div class="item active" align="center">
-      <h3>{{ plot['name'] }}</h3>
-      {{ plot['plot_script']|safe }}
-      {{ plot['plot_div']|safe }}
+    <!-- Wrapper for slides -->
+    <div class="carousel-inner" role="listbox">
+      {% for name in plotNames %}
+      {% if loop.first %}
+      <div class="item active" align="center" id={{ name }}>
+        <h5>{{ name }}</h5>
+        <script src="{{ url_for('serve_js', name=session['name'], plotName=name) }}"></script>
+      </div>
+      {% else %}
+      <div class="item" align="center" id={{ name }}>
+        <h5>{{ name }}</h5>
+        <script data-src="{{ url_for('serve_js', name=session['name'], plotName=name) }}"></script>
+      </div>
+      {% endif %}
+      {% endfor %}
     </div>
-    {% else %}
-    <div class="item" align="center">
-      <h3>{{ plot['name'] }}</h3>
-      {{ plot['plot_script']|safe }}
-      {{ plot['plot_div']|safe }}
-    </div>
-    {% endif %}
-    {% endfor %}
+
+    <!-- Controls -->
+    <a class="left carousel-control" href="#transpose" role="button" data-slide="prev">
+      <span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>
+      <span class="sr-only">Previous</span>
+    </a>
+    <a class="right carousel-control" href="#transpose" role="button" data-slide="next">
+      <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
+      <span class="sr-only">Next</span>
+    </a>
   </div>
-
-  <!-- Controls -->
-  <a class="left carousel-control" href="#transpose" role="button" data-slide="prev">
-    <span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>
-    <span class="sr-only">Previous</span>
-  </a>
-  <a class="right carousel-control" href="#transpose" role="button" data-slide="next">
-    <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
-    <span class="sr-only">Next</span>
-  </a>
-</div>
+</section>
 {% endblock %}
