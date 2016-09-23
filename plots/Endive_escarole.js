@@ -1,0 +1,1 @@
+$( "#Endive_escarole" ).load( "/veggies-imp/c/transpose_index/html/Endive_escarole" );

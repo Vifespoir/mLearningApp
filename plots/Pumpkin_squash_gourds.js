@@ -1,0 +1,1 @@
+$( "#Pumpkin_squash_gourds" ).load( "/veggies-exp/c/transpose_index/html/Pumpkin_squash_gourds" );

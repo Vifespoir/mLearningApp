@@ -1,0 +1,1 @@
+$( "#Lettuce_other" ).load( "/veggies-imp/c/transpose_index/html/Lettuce_other" );

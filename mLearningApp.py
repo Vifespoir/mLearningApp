@@ -2,7 +2,8 @@
 
 # all the imports
 import os
-from flask import Flask, request, session, g, redirect, url_for, render_template, flash  # send_from_directory, abort
+from flask import Flask, request, session, g, redirect, url_for,\
+    render_template, flash, send_file  # send_from_directory, abort
 from werkzeug.utils import secure_filename
 import logging
 from mLearning.dataPlot import DataPlot
@@ -12,8 +13,9 @@ import inspect
 import ast
 from secret import SECRET_KEY
 from os import listdir  # getcwd
-from time import clock
+# from time import clock
 # from jinja2 import FileSystemLoader
+import threading
 
 logging.basicConfig(
     level=logging.DEBUG, format=' %(asctime)s - %(levelname)s - %(message)s')
@@ -26,20 +28,20 @@ app.config.from_object(__name__)
 app.config.update(dict(
     SECRET_KEY=SECRET_KEY,
     UPLOAD_FOLDER='uploads/',
+    PLOT_FOLDER='plots/',
     MAX_CONTENT_LENGTH=16 * 1024 * 1024,
     static_folder='/home/vifespoir/static'
 ))
 
 app.config.from_envvar('FLASKR_SETTINGS', silent=True)
 
-# TODO make the following works
-# loader = FileSystemLoader(getcwd() + '/templates/', followlinks=True)
-# app.jinja_loader = loader
-
 # Constants
 ALLOWED_EXTENSIONS = ['csv']
 SIMPLE_METHOD_NAMES = ['boxplot_all_quartiles', 'parallel_coordinates_graph', 'heatmap_pearson_correlation']
 COMPLEX_METHOD_NAMES = ['cross_plotting_pair_of_attributes', 'transpose_index', 'plot_target_correlation']
+LOAD_HTML_SCRIPT = '$( "#{}" ).load( "{}" );'
+# TODO implement:
+# BOKEH_VERSION = '0.12.1'
 
 
 def allowed_file(filename):
@@ -106,16 +108,6 @@ def choose_file():
         return redirect(url_for('upload_file'))
     else:
         return render_template('choose_file.html', files=files)
-
-# @app.route('/uploads/<filename>')
-# def uploaded_file(filename):
-#     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
-#
-# def getitem(obj, item, default):
-#     if item not in obj:
-#         return default
-#     else:
-#         return obj[item]
 
 
 @app.route('/<name>', methods=['GET', 'POST'])
@@ -217,67 +209,59 @@ def cross_plotting_pair_of_attributes(name):
                            name=None)
 
 
+class TransposeThread(threading.Thread):
+    def __init__(self, methodName, methods, filename):
+        threading.Thread.__init__(self)
+        self.methodName = methodName
+        self.methods = methods
+        self.filename = filename
+
+    def run(self):
+        method = self.methods[self.methodName]
+
+        transpose_index = method()
+
+        names = []
+        for plot in transpose_index:
+            html, name = plot[0]
+            # print(html, name)
+            script = LOAD_HTML_SCRIPT.format(name, '/{}/c/transpose_index/html/{}'.format(self.filename, name))
+            with open(os.path.join(app.config['PLOT_FOLDER'], name + '.js'), 'w+') as f:
+                f.write(script)
+            with open(os.path.join(app.config['PLOT_FOLDER'], name + '.html'), 'w+') as i:
+                i.write(html)
+            names.append(name)
+
+
 @app.route('/<name>/c/transpose_index', methods=['GET', 'POST'])
 def transpose_index(name):
-    start = clock()
     logging.debug('App Transpose Index starting...')
     dataPlot = DataPlot(tableName='us-veggies',
                         dataFile='uploads/' + session['filename'],
                         normalized=session['dataStatus'])
 
-    elapsed = clock() - start
-    logging.debug('Time elapsed to dataPlot: %s' % elapsed)
-
     logging.debug('dataPlot Status: %s' % dataPlot.normalized)
 
+    names = list(set(dataPlot.data.index))
+    names.sort()
+
     methods = dict(inspect.getmembers(dataPlot, predicate=inspect.ismethod))
-    method = methods[session['methodName']]
-    transpose_index = method()
 
-    elapsed = clock() - start
-    logging.debug('Time elapsed to transpose_index: %s' % elapsed)
+    background = TransposeThread(session['methodName'], methods, session['name'])
+    background.start()
+    logging.debug('Transposing Index in the background')
 
-    js_resources = INLINE.render_js()
-    css_resources = INLINE.render_css()
+    return render_template(session['methodName'] + '.html', plotNames=names)
 
-    if request.method == 'POST':
-        logging.debug('POST form: %s' % [item for item in request.form.items()])
-        if 'next' in request.form:
-            logging.debug('Next')
-            if session['position'] < len(session['plots']):
-                session['position'] += 1  # moves to the next stored plot
-                script, div, name = session['plots'][session['position']]
-            else:
-                logging.debug('New Next')
-                session['position'] += 1
-                plot = transpose_index.__next__()
-                script, div = components(plot.document(), INLINE)
-                name = plot.plotName
-        else:
-            logging.debug('Previous')
-            if session['position'] > -1:
-                session['position'] -= 1  # moves to the previous stored plot
-                script, div, name = session['plots'][session['position']]
-            else:
-                logging.debug('No more Previous')
-                session['position'] = 0  # moves to the first plot
-                script, div, name = session['plots'][session['position']]
-    else:
-        logging.debug('First')
-        session['plots'] = []
-        session['position'] = 0
-        plot = transpose_index.__next__()
-        script, div = components(plot.document(), INLINE)
-        name = plot.plotName
 
-    session['plots'].append((script, div, name))
+@app.route('/<name>/c/transpose_index/js/<plotName>')
+def serve_js(name, plotName):
+    return send_file(os.path.join(app.config['PLOT_FOLDER'], plotName + '.js'))
 
-    return render_template(session['methodName'] + '.html',
-                           plot_script=script,
-                           plot_div=div,
-                           js_resources=js_resources,
-                           css_resources=css_resources,
-                           name=name)
+
+@app.route('/<name>/c/transpose_index/html/<plotName>')
+def serve_html(name, plotName):
+    return send_file(os.path.join(app.config['PLOT_FOLDER'], plotName + '.html'))
 
 
 @app.route('/<name>/c/plot_target_correlation', methods=['GET', 'POST'])
