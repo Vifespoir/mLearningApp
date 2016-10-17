@@ -31,7 +31,7 @@ app.config.update(dict(
     PLOT_FOLDER='plots/',
     MAX_CONTENT_LENGTH=16 * 1024 * 1024,
     static_folder='/home/vifespoir/static',
-    SERVER_NAME='https://etiennepouget.com'
+    SERVER_NAME='https://mlearning.etiennepouget.com'
 ))
 
 app.config.from_envvar('FLASKR_SETTINGS', silent=True)
