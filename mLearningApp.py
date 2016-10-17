@@ -30,7 +30,8 @@ app.config.update(dict(
     UPLOAD_FOLDER='uploads/',
     PLOT_FOLDER='plots/',
     MAX_CONTENT_LENGTH=16 * 1024 * 1024,
-    static_folder='/home/vifespoir/static'
+    static_folder='/home/vifespoir/static',
+    SERVER_NAME='https://etiennepouget.com'
 ))
 
 app.config.from_envvar('FLASKR_SETTINGS', silent=True)
